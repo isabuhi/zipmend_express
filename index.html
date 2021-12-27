@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Zipmend express</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,900&display=swap" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+</head>
+<body style="margin: 0;" >
+
+
+<style>
+   * {
+       font-family: Lato;
+   }
+   input {
+       border: unset;
+       outline: unset;
+   }
+   .border-top-left-radius {
+       border-top-left-radius: 4px;
+   }
+   .border-top-right-radius {
+       border-top-right-radius: 4px;
+   }
+   .border-bottom-left-radius {
+       border-bottom-left-radius: 4px;
+   }
+   .border-bottom-right-radius {
+       border-bottom-right-radius: 4px;
+   }
+   .flex-row {
+       display: flex;
+       flex-direction: row;
+   }
+   .input-border {
+       border: 1px solid #9E9E9E;
+   }
+   .navbar-style {
+       position: fixed;
+       height: 75px;
+       box-shadow: 0px 3px 16px #D1D1D1;
+       display: flex;
+       flex-direction: column;
+       justify-content: center;
+       padding: 0 21%;
+       width: 100%;
+       background: white;
+       z-index: 1000;
+   }
+   .calc-field {
+       display: flex;
+       flex-direction: column;
+       justify-content: center;
+       padding: 0 21%;
+   }
+   .calc-box {
+       margin-top: 115px;
+       box-shadow: 0px 2px 33px #D1D1D1;
+   }
+   .padding-42-63 {
+       padding: 42px 63px
+   }
+   .head-text {
+       color: #121231;
+       font-size: 24px;
+       line-height: 29px;
+       font-weight: bold
+   }
+
+   .border-style {
+       border: 2px solid #121231;
+   }
+   .border-style-left {
+       border-left: 2px solid #121231!important;
+   }
+   .select:hover {
+       border-left: 5px solid #121231;
+       background: #F4F4F4;
+       cursor: pointer;
+   }
+   nav a {
+       color: white;
+       text-decoration: none;
+       margin-right: 85px;
+   }
+</style>
+
+
+
+<div id="root">
+
+
+</div>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+<script type="text/javascript">
+
+
+    Vue.component('Navbar', {
+        template: "<div class=\"navbar-style\">\n" +
+            "    <div style=\" width: fit-content\">\n" +
+            "        <img src=\"img/Logo.svg\" height=\"59\">\n" +
+            "    </div>\n" +
+            "</div>"
+    })
+
+
+    Vue.component('footerx', {
+        template: "<div class=\"navbar-style\" style='position: initial; background: #121231 0% 0% no-repeat padding-box; padding: 0 21%; margin-top: 218px'>" +
+            "<nav>\n" +
+            "<a href=\"#\">Contact</a> \n" +
+            "<a href=\"#\">Terms and conditions</a> \n" +
+            "<a href=\"#\">Data policy</a> \n" +
+            "<a href=\"#\">Legal</a>\n" +
+            "</nav>\n" +
+            "</div>"
+    })
+
+
+    Vue.component("loading",{
+        template: "<div>\n" +
+            "            <div style=\"margin-top: 46px\">\n" +
+            "                 <div style=\" color: #333333; font-size: 20px; line-height: 24px; font-weight: normal\">Loading</div>\n" +
+            "                 <div style=\"display: flex; flex-direction: row; margin-top: 10px\">\n" +
+            "                     <country-input v-bind:country=\"country\" v-on:selectCountry=\"updateCountry\"></country-input>\n" +
+            "                     <city-input v-on:cityUpdate='city_update' :cityData='cityData' :cities=\"countryData\" v-model=\"query\"></city-input>\n" +
+            "\n" +
+            "                 </div>\n" +
+            "            </div>\n" +
+            "        </div>",
+        props: ["key_L"],
+        data() {
+            return {
+
+                country: "AT",
+                query: "",
+                countryData: [],
+                clicked: true,
+                cityData: null,
+                postRequestObject: null
+            }
+
+        },
+        watch: {
+            query: function() {
+                this.loadCountry();
+            },
+            country: function() {
+                this.removeData();
+                this.cityData = null;
+                this.query = "";
+            },
+            cityData: function (value){
+                this.updateCityData ();
+                if(typeof value === "string")
+                    this.removeData();
+            }
+        },
+
+
+
+        methods: {
+            removeData(){
+                this.$emit("removeItem");
+            },
+            updateCityData (){
+                if(typeof this.cityData === "object" ) {
+                    let object = {country: this.country, zip: this.cityData.zipCode, city: this.cityData.name};
+                    this.$emit("objectpass", object, 0, this.key_L);
+                }
+            },
+            city_update(value){
+                this.cityData = value;
+            },
+            updateCountry: function (v){
+                this.country = v;
+            },
+            loadCountry: function() {
+                if(this.query === "")
+                    this.countryData = [];
+                else {
+                    fetch("https://interview.develop.zipmend.com/api/v3/cities/" + this.country + "/" + this.query ).then(response => response.json()).then(data => {this.countryData = data.data;})
+                }
+            }
+        },
+        mounted: function () {
+            this.loadCountry();
+        },
+    })
+
+    Vue.component("unloading",{
+        template: "<div>\n" +
+            "            <div style=\"margin-top: 46px\">\n" +
+            "                 <div style=\" color: #333333; font-size: 20px; line-height: 24px; font-weight: normal\">Unloading</div>\n" +
+            "                 <div style=\"display: flex; flex-direction: row; margin-top: 10px\">\n" +
+            "                     <country-input v-bind:country=\"country\" v-on:selectCountry=\"updateCountry\"></country-input>\n" +
+            "                     <city-input v-on:cityUpdate='city_update' :cityData='cityData' :cities=\"countryData\" v-model=\"query\"></city-input>\n" +
+            "\n" +
+            "                 </div>\n" +
+            "            </div>\n" +
+            "        </div>",
+        props: ["key_U"],
+        data() {
+            return {
+
+                country: "AT",
+                query: "",
+                countryData: [],
+                clicked: true,
+                cityData: null,
+                postRequestObject: null
+            }
+
+        },
+        watch: {
+            query: function() {
+                this.loadCountry();
+            },
+            country: function() {
+                this.removeData();
+                this.cityData = null;
+                this.query = "";
+            },
+            cityData: function (value){
+                console.log("dwwd")
+                this.updateCityData ()
+                if(typeof value === "string")
+                    this.removeData();
+            }
+        },
+
+
+
+        methods: {
+            removeData(){
+                this.$emit("removeItem")
+            },
+            updateCityData (){
+                if(typeof this.cityData === "object" ) {
+                    let object = {country: this.country, zip: this.cityData.zipCode, city: this.cityData.name};
+                    this.$emit("objectpass", object, 1, this.key_U);
+                }
+            },
+            city_update(value){
+                this.cityData = value;
+            },
+            updateCountry: function (v){
+                this.country = v;
+            },
+            loadCountry: function() {
+                if(this.query === "")
+                    this.countryData = [];
+                else {
+                    fetch("https://interview.develop.zipmend.com/api/v3/cities/" + this.country + "/" + this.query ).then(response => response.json()).then(data => {this.countryData = data.data;})
+                }
+            }
+        },
+        mounted: function () {
+            this.loadCountry();
+        },
+    })
+
+    Vue.component("city-input",{
+        data(){
+           return {
+               clicked: false,
+               inputValue : "",
+           }
+        },
+        props: ["cities", "cityData"],
+        methods: {
+            city_zipCode(value){
+                this.inputValue = value.zipCode + " " + value.name;
+               this.$emit("cityUpdate", value)
+            },
+            updateValue(value) {
+                this.$emit('input', value);
+                this.$emit("cityUpdate", this.inputValue);
+            },
+            toggle(){
+                this.clicked = !this.clicked;
+            }
+        },
+        template: "<div v-on:click.stop='toggle' style='position: relative; width: 40%'><input v-bind:class=\"{'border-style': clicked}\" v-model='inputValue' :value='inputValue' v-on:input='updateValue($event.target.value)' style='width: 100%; padding: 12px 16px 13px;box-sizing: border-box; color: #7D7D7D;font: normal normal bold 13px/16px Lato;' placeholder='Enter postcode / city' class='input-border border-top-right-radius border-bottom-right-radius'/>" +
+            "<ul  v-if='clicked' class=\"border-bottom-left-radius border-bottom-right-radius border-style select-box\" style=\"position: absolute; z-index: 3000; background: white; padding: 0; margin: 0; list-style: none; box-sizing: border-box; height: 110px; overflow: scroll; top: 41px; width: 100%;\">" +
+            "                                           <li class=\"select\" style=\"padding: 10px 17px; color: #333333; font: normal normal normal 14px/17px Lato;\" v-on:click='city_zipCode(city)' v-for='(city, i) in cities' :key='i+1'>{{city.zipCode}} {{city.name}}</li>" +
+            "                                       </ul>" +
+            "</div>",
+        mounted: function () {
+            let self = this
+            $("body").click(function (){
+                self.clicked = false;
+            });
+        },
+        watch: {
+            cityData: function (value){
+                if (value === null)
+                    this.inputValue = "";
+            }
+        },
+
+    })
+
+    Vue.component("country-input",{
+        data(){
+            return{
+                clicked: false,
+                listClick: false,
+                countries:  [
+                    'AT', 'BE', 'BG', 'CH', 'CZ', 'DE', 'DK', 'EE', 'ES', 'FI', 'FR', 'GB', 'HR', 'HU', 'IT', 'LU', 'LT', 'LV', 'MC', 'NL', 'PL', 'PT', 'RO', 'SE', 'SK', 'SI'
+                ],
+            }
+        },
+        props: ['country'],
+        template: '<div class="border-top-left-radius  input-border" v-bind:class="{\'border-style\': clicked, \'border-bottom-left-radius\': !clicked}" style="position: relative">\n' +
+            '                            <div class="flex-row" v-on:click.stop="toggle"><div style="padding: 12px 23px; color: #333333; font-size: 14px; line-height: 17px; font-weight: normal; width: 99px; box-sizing: border-box">{{country}}</div>\n' +
+            '                            <div :class="{\'border-style-left\': clicked}" style=" height: 41px; width: 41px; padding: 9px; border-left: 1px solid #9E9E9E;"><img style="width: 23px" src="img/down-arrow.png"></div></div>\n' +
+            '                            <ul v-if="clicked" class="border-bottom-left-radius border-bottom-right-radius border-style select-box" style="position: absolute;box-sizing: border-box; z-index: 3000; background: white;  padding: 0; margin: 0; list-style: none; height: 110px; overflow: scroll; top: 41px; width: 100%;">\n' +
+            '                                <li class="select" style="padding: 10px 17px; color: #333333; font: normal normal normal 14px/17px Lato;" v-on:click="selectEvent(country)" v-for="(country, i) in countries" :key="i">{{country}}</li>\n' +
+            '                            </ul>\n' +
+            '                        </div>',
+        methods:{
+            selectEvent(value){
+                this.listClick = !this.listClick;
+                this.$emit("selectCountry", value);
+            },
+            toggle(){
+                this.clicked = !this.clicked;
+            }
+        },
+
+        mounted: function () {
+            let self = this
+            $("body").click(function (){
+                self.clicked = false;
+            });
+        }
+
+    })
+
+
+    new Vue({ el: '#root' ,
+        data() {
+            return {
+                postRequest: {
+                    token: "tb7iVecOI1XQcj58346jN2bQJ8MrDG7YXwr4NXvS",
+                    addresses: []
+                },
+                i: [],
+                j: [],
+                price: 0,
+                vat_rate: 0,
+                keyL: [0],
+                keyU: [1],
+            }
+        },
+
+        template: "<div >\n" +
+            "        <Navbar></Navbar>\n" +
+            "        <div  class=\"calc-field\">\n" +
+            "            <div class=\"calc-box\">\n" +
+            "                <div class=\"padding-42-63\">\n" +
+            "                    <div class=\"head-text\" style=\"\">Calculate price now</div>\n" +
+            "                    <div style='position: relative' v-for='(item, i) in keyL'><loading :key_L='i' :key='i' v-on:removeItem='removeArrayItem(i, 0)'  v-on:objectpass=\"objectSet\"/><div style='position: absolute; bottom: 10px; right: 80px; text-decoration: underline;color: #9E9E9E; cursor: pointer' @click='add_remove_input(i, 0)'>{{get_text(i, 0)}}</div></div>\n" +
+            "                    <div style='position: relative' v-for='(item, i) in keyU'><unloading :key_U='i' :key='i' v-on:removeItem='removeArrayItem(i, 1)' v-on:objectpass=\"objectSet\"/><div style='position: absolute; bottom: 10px; right: 80px; text-decoration: underline;color: #9E9E9E; cursor: pointer' @click='add_remove_input(i, 1)'>{{get_text(i, 1)}}</div></div>\n" +
+            "                </div>\n" +
+            "                <div style=\"padding: 38px 73px 65px; display: flex; flex-direction: column; \">\n" +
+            "                    <div class=\"flex-row\" style=\"justify-content: end; color: #9E9E9E; font: normal normal bold 16px/19px Lato;\">Total</div>\n" +
+            "                    <div class=\"flex-row\" style=\"justify-content: end; color: #121231; font: normal normal bold 35px/42px Lato;\"><span>{{price.toFixed(2)}}   EUR</span> </div>\n" +
+            "                    <div class=\"flex-row\" style=\"justify-content: end; color: #121231; font: normal normal normal 16px/19px Lato;\"><span>excl. {{vat_rate.toFixed(2)}}   VAT Gross</span><span>{{(price + price * vat_rate).toFixed(2)}}    EUR *</span></div><button style='background: #E72A50 0% 0% no-repeat padding-box; padding: 12px; color: white; outline: unset; border: unset; border-radius: 4px; font: normal normal bold 18px/22px Lato; margin-top: 40px; cursor: pointer' data-bs-toggle=\"modal\" data-bs-target=\"#exampleModal\">Book transport</button><div class=\"modal fade\" id=\"exampleModal\" tabindex=\"-1\" aria-labelledby=\"exampleModalLabel\" aria-hidden=\"true\">\n" +
+                                "  <div class=\"modal-dialog\" style='max-width: 476px; margin-top: calc(50vh - 150px); margin-bottom: 0'>\n" +
+                                "    <div class=\"modal-content\">\n" +
+                                "      <div class=\"modal-body\">\n" +
+                                "        <div style='display: flex; flex-direction: column'><div style='text-align: center;font: normal normal bold 35px/42px Lato; margin-top: 50px'>Success!</div><div style='text-align: center;font: normal normal normal 24px/29px Lato; margin-top: 8px; margin-bottom: 41px'>Your transport was booked.</div></div>\n" +
+                                "      </div>\n" +
+                                "      <div class=\"modal-footer flex-row\" style='justify-content: center; border: none'>\n" +
+                                "        <button type=\"button\" class=\"btn btn-secondary\" style='background: #E72A50 0% 0% no-repeat padding-box; padding: 12px 104px; border: none; margin-bottom: 50px' data-bs-dismiss=\"modal\">Ok</button>\n" +
+                                "      </div>\n" +
+                                "    </div>\n" +
+                                "  </div>\n" +
+                                "</div>\n" +
+            "                </div>\n" +
+            "            </div>\n" +
+            "        </div>\n" +
+            "        <footerx></footerx>\n" +
+            "    </div>",
+
+
+
+
+
+        methods: {
+            get_text(index, key){
+                if(key === 0){
+                    if(index === 0){
+                        return "Add loading address"
+                    }
+                    else{
+                        return "Remove loading address"
+                    }
+                }
+                else{
+                    if(index === 0){
+                        return "Add unloading address"
+                    }
+                    else{
+                        return "Remove unloading address"
+                    }
+                }
+            },
+            add_remove_input(index, key){
+                if(key === 0){
+                    if(index === 0){
+                        this.keyL.push(0);
+                    }
+                    else{
+                        this.keyL.pop();
+                        this.i[index] = 0;
+                        this.updateList();
+                    }
+                }
+                else{
+                    if(index === 0){
+                        this.keyU.push(1);
+                    }
+                    else{
+                        this.keyU.pop();
+                        this.j[index] = 0;
+                        this.updateList();
+                    }
+                }
+            },
+            removeArrayItem(index, key){
+                if(key === 0){
+                    this.i[index] = 0;
+                    this.updateList ();
+                }
+                else{
+                    this.j[index] = 0;
+                    this.updateList ();
+                }
+            },
+            updateList () {
+                if (this.i.filter((value => {if(value !== 0) return value})).length !== 0 && this.j.filter((value => {if(value !== 0) return value})).length !== 0) {
+                    this.postRequest.addresses = this.i.concat(this.j).filter((value => {if(value !== 0) return value}))
+                    this.postFunction(this.postRequest);
+                }
+                else {
+                    this.vat_rate = 0;
+                    this.price = 0;
+                }
+            },
+            postFunction (value){
+                fetch("https://interview.develop.zipmend.com/api/v3/price", {
+                    method: "POST",
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(value)
+                }).then(res => res.json()).then(data => {
+                    this.price = data.data.price;
+                    this.vat_rate = data.data.vat_rate;
+                });
+            },
+            objectSet (value, i, index){
+                if(i === 0) {
+                    this.i[index] = value;
+                    this.updateList ();
+                }
+                else{
+                    this.j[index] = value;
+                    this.updateList ();
+                }
+
+            }
+        },
+
+    })
+
+
+
+
+</script>
+
+
+</body>
+</html>
